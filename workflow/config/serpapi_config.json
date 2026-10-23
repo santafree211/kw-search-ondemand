@@ -1,0 +1,11 @@
+{
+  "description": "Configuration for Google Search verification via SerpApi with strict daily (7 calls/day) and monthly (240 calls/month) limits to preserve the 250 free monthly searches.",
+  "api_key": "",
+  "daily_limit": 7,
+  "monthly_limit": 240,
+  "engine": "google",
+  "gl": "jp",
+  "hl": "ja",
+  "num": 10,
+  "timeout_seconds": 30
+}

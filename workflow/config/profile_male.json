@@ -1,0 +1,13 @@
+{
+  "profile": "male",
+  "gender": "male",
+  "title": "KWagent",
+  "spreadsheetId": "1ZFYMVVc10cZISofcB71x6ICt9ejZyGLzmVgpKbXvR40",
+  "targetSheetName": "当たりKW",
+  "weakPatternsFile": "weak_competitor_male_patterns.json",
+  "shelvedStockFile": "shelved_stock_male.json",
+  "pipelineStateFile": "pipeline_state_male.json",
+  "starCalculatorScript": "eval_star_calculator_male.ps1",
+  "weakCompetitorScript": "eval_weak_competitor_male_rule.ps1",
+  "genreCatalogFile": "genre_catalog_male.json"
+}

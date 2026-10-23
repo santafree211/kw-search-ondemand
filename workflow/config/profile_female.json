@@ -1,0 +1,13 @@
+{
+  "profile": "female",
+  "gender": "female",
+  "title": "（女性）KWagent",
+  "spreadsheetId": "1qzhyI8HYRsTyPTyaK7Xnka7PlKAuc3UxpPEaJXj1qTw",
+  "targetSheetName": "当たりKW",
+  "weakPatternsFile": "weak_competitor_patterns.json",
+  "shelvedStockFile": "shelved_stock_female.json",
+  "pipelineStateFile": "pipeline_state_female.json",
+  "starCalculatorScript": "eval_star_calculator.ps1",
+  "weakCompetitorScript": "eval_weak_competitor_rule.ps1",
+  "genreCatalogFile": "genre_catalog_female.json"
+}

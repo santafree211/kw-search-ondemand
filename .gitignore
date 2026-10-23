@@ -1,0 +1,21 @@
+# Credentials & secrets
+*.json
+!workflow/config/ai_daily_modifiers.json
+!workflow/config/*.json
+
+# Logs & scratch
+logs/
+scratch/
+*.log
+
+# Cache & DB
+data/cache/
+*.sqlite
+*.db
+
+# Python
+__pycache__/
+*.pyc
+
+# Temp
+=
