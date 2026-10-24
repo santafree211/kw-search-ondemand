@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     research_bulk_expand.ps1
     Responsibility: Expand seed keywords in chunked batches via Ubersuggest match_keywords.
