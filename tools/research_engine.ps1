@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     tools/research_engine.ps1
     Responsibility: Single Core Research Engine for 50-genre parallel water-leveling research.
@@ -308,10 +308,7 @@ while ($totalApiCalls -lt $MaxTotalCalls -and -not $exhausted) {
             $totalApiCalls += $actualCalls
             if ($bulkRes.IsExhausted) {
                 if ($bulkRes.ExhaustionError -match "(?i)429|403|Daily report.*limit") {
-                    $exhausted = $true
-                    $exhaustionError = $bulkRes.ExhaustionError
-                    Write-Warning "PHYSICAL API EXHAUSTION DETECTED: $($bulkRes.ExhaustionError)"
-                    break
+                    Write-Warning "Bulk expand match_keywords quota reached ($($bulkRes.ExhaustionError)). Continuing SERP inspection with existing DB unqueried keywords..."
                 } else {
                     Write-Warning "Bulk expand timed out (handled by MCP retries). Skipping to next step..."
                 }
@@ -374,10 +371,8 @@ while ($totalApiCalls -lt $MaxTotalCalls -and -not $exhausted) {
                 $totalApiCalls += [int]$expRes.ApiCalls
             }
             if ($expRes.IsExhausted) {
-                $exhausted = $true
-                $exhaustionError = $expRes.ExhaustionError
-                Write-Warning "PHYSICAL API EXHAUSTION DETECTED IN AUTO-EXPANDER: $($expRes.ExhaustionError)"
-                break
+                # Notice: match_keywords Daily Report Limit (100) exhausted. Do not abort SERP pipeline!
+                Write-Warning "Auto-Expander match_keywords quota reached ($($expRes.ExhaustionError)). Continuing SERP inspection with existing DB unqueried keywords..."
             }
             $derived = $expRes.Keywords
             if ($derived -and $derived.Count -gt 0) {
