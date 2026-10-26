@@ -1,4 +1,4 @@
-<#
+﻿<#
 
 .SYNOPSIS
 
@@ -52,31 +52,31 @@ param(
 
     [Parameter(Mandatory=$false)]
 
-    [int]$MaxTotalCalls = 2500,
+    [int]$MaxTotalCalls = 5000,
 
 
 
     [Parameter(Mandatory=$false)]
 
-    [int]$BatchCallsPerGender = 480,
+    [int]$BatchCallsPerGender = 960,
 
 
 
     [Parameter(Mandatory=$false)]
 
-    [int]$MaleBatchCalls = 800,
+    [int]$MaleBatchCalls = 1600,
 
 
 
     [Parameter(Mandatory=$false)]
 
-    [int]$FemaleBatchCalls = 480,
+    [int]$FemaleBatchCalls = 960,
 
 
 
     [Parameter(Mandatory=$false)]
 
-    [int]$MaxKwsPerGenreBatch = 80,
+    [int]$MaxKwsPerGenreBatch = 160,
 
 
 
