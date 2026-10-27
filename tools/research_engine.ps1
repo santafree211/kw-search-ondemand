@@ -394,8 +394,20 @@ while ($totalApiCalls -lt $MaxTotalCalls -and -not $exhausted) {
         }
     }
 
-    # Prioritize truly unsearched keywords first to ensure fresh API calls and prevent idle cache loops
-    $orderedCandidates = @($unsearchedKws) + @($cachedKws)
+    # --- STAR3+ PRIORITY SIFTING (S/A-Rank troubleshooting & DIY priority) ---
+    $troubleRegex = '外れ防止|落ちる|外れる|壊れた|ちぎれた|取れない|浮いてくる|割れた|代わり|代用|自作|身近なもの|裏ワザ|付け方|外し方|直し方|自分で直す|理由|知恵袋|ブログ|違い|原因|対処|やり方|コツ|比較|口コミ|手入れ|長持ち|初心者|選び方'
+    $sRankKws = @()
+    $otherUnsearched = @()
+    foreach ($cand in $unsearchedKws) {
+        if ($cand.Keyword -match $troubleRegex) {
+            $sRankKws += $cand
+        } else {
+            $otherUnsearched += $cand
+        }
+    }
+    # Prioritize S-Rank keywords first to hit Star3+ and release stock
+    $orderedCandidates = @($sRankKws) + @($otherUnsearched) + @($cachedKws)
+    Write-Output "  [Star3-Priority Sorter] S-Rank High-Probability KWs: $($sRankKws.Count) / General: $($otherUnsearched.Count)"
     Write-Output "Available Keywords for Genre: $($orderedCandidates.Count) (Truly Unsearched: $($unsearchedKws.Count), Cached: $($cachedKws.Count))"
 
     if ($orderedCandidates.Count -eq 0) {
