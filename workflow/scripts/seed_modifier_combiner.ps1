@@ -1,8 +1,20 @@
 <#
 .SYNOPSIS
-    seed_modifier_combiner.ps1
-    Single Responsibility: Extract core head terms and synthesize longtail seeds using AI daily modifiers and live Google autocomplete suggestions.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    seed_modifier_combiner.ps1 - シードトークン分解＆ロングテール候補合成モジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       ジャンル定義シードおよびジャンル名からヘッド単語（headTerms）を抽出し、固定修飾子（おすすめ、選び方等）
+       ＋日次AI修飾子（ai_daily_modifiers.json）＋Google Autocomplete（無料サジェスト）を掛け合わせて
+       高確率な合成シードリストを生成する。
+    2. 準拠ルール:
+       - GEMINI.md 第4条: 日次1回AIシード思考プロトコル（0トークン実行時コストの外部修飾子適用）。
+    3. 入力・出力仕様:
+       - Inputs : $GenreObj (ジャンルオブジェクト), $ConfigDir (設定ディレクトリパス)
+       - Outputs: PSCustomObject @{ CandidateSeeds (string[] 合成シード), CoreTokens (string[] コア単語) }
+    4. 修正時の注意点:
+       - 文字化け（マルチバイト破壊）を防ぐため、日本語修飾子リテラルはASCIIエスケープまたはUTF8バイト配列で保持すること。
 #>
 
 $ErrorActionPreference = "Stop"

@@ -1,8 +1,21 @@
 <#
 .SYNOPSIS
-    engine_star3_gate.ps1
-    Single Responsibility: Filter batch via Star-3 First Architecture and execute safe commit or stock shelter.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    engine_star3_gate.ps1 - 星3先行コミットゲート＆ストック退避モジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       芋づる抽出されたKWバッチに「☆☆☆以上（Star3+）」が1件以上含まれているか判定。
+       星3が含まれないバッチはスプシ登録せず直接ストック（stock_shelved.json）へ退避し、
+       黄金比率（☆☆☆ >= 50%）を崩さない安全なコミットのみを実行する。
+    2. 準拠ルール:
+       - GEMINI.md 第2条: 黄金比率維持（☆☆☆が全体の過半数を維持、☆☆と☆は各25%以下）。
+    3. 入力・出力仕様:
+       - Inputs : $HarvestResult, $TargetGenre, $Gender, $Profile, $Tracker, $DryRun
+       - Outputs: PSCustomObject @{ Committed (bool), Reason (string) }
+    4. 修正時の注意点:
+       - 星3が存在しないバッチは例外なくスプシへの行登録を遮断し、ストックファイルに追記すること。
+       - コミット時は `tools/sheet_commit.ps1` を正規呼び出しすること。
 #>
 
 $ErrorActionPreference = "Stop"

@@ -1,8 +1,20 @@
 <#
 .SYNOPSIS
-    pipeline_exhaustion_detector.ps1
-    Single Responsibility: Detect and classify API exhaustion (429/403/limits) vs transient timeouts from batch output.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    pipeline_exhaustion_detector.ps1 - バッチ出力ログのAPI物理枯渇/一時遅延分類判定
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       実行された探索バッチの出力ログテキストを解析し、「物理的API上限（429/403/Daily report limit）」と
+       「一時的なネットワーク遅延/タイムアウト」を厳格に分類・判定する。
+    2. 準拠ルール:
+       - GEMINI.md 第3条・第5条: 客観的停止基準の遵守。
+       - 一時的通信タイムアウトはMCPリトライ基盤で自己修復を図り、安易な主観的中断を禁止。
+    3. 入力・出力仕様:
+       - Inputs : $OutputLines (string[] 出力行リスト), $CurrentGender (string)
+       - Outputs: PSCustomObject @{ IsPhysicalLimit, IsTransient, ErrorText }
+    4. 修正時の注意点:
+       - 単なるWarningやTimeout文字列を即座にIsPhysicalLimit=$trueと誤判定しないこと。429/403/Daily report limitの物理的シグナルのみを枯渇と認定すること。
 #>
 
 $ErrorActionPreference = "Stop"

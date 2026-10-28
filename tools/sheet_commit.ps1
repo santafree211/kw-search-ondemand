@@ -1,16 +1,32 @@
 <#
 .SYNOPSIS
-    tools/sheet_commit.ps1
-    Responsibility: Single Unified Safe Site & Keyword Spreadsheet Commit Engine.
-    Architecture: Ultra-Lean Orchestrator delegating to specialized single-responsibility modules:
-      - commit_param_parser.ps1 (Input normalization, JSON parsing & keyword expansion)
-      - commit_policy_guard.ps1 (Site eligibility DA 1-9, non-UGC, gender, YMYL & entertainment guards)
-      - commit_serp_reconciler.ps1 (SERP star rating reconciliation with raw API cache)
-      - commit_sheet_state_loader.ps1 (Extraction of existing sheet keywords and token map)
-      - commit_sheet_dedup.ps1 (Duplicate rejection within sheet and across opposite gender sheet)
-      - commit_genre_resolver.ps1 (Strict semantic genre resolution against 50-genre catalog)
-      - commit_row_builder.ps1 (Row formatting, site merge, and 16-KW overflow split generation)
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    tools/sheet_commit.ps1 - スプレッドシート安全サイト＆キーワード登録司令塔
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       実測DA 1〜9の個人ブログおよび当たりKWをスプレッドシートへ安全に登録するメイン司令塔。
+       ポリシー検証 ➔ SERP星数突合 ➔ 重複排除 ➔ 黄金比率配分 ➔ ジャンル解決 ➔ 行マージ・分割 ➔ アトミック更新
+       を一連の安全パイプラインとして管理する。
+    2. 準拠ルール:
+       - GEMINI.md 第2条: 実測DA 1〜9の独立個人ブログのみ登録（UGC自身を行登録することは厳禁）。
+       - GEMINI.md 第2条: 黄金比率（☆☆☆ >= 50%, ☆☆ <= 25%, ☆ <= 25%）の絶対維持。
+       - GEMINI.md 第3条: スプシ ✕ ルール ✕ Ubersuggest/Google生SERPの3者完全一致。
+    3. 構成モジュール (Delegation Modules):
+       - commit_param_parser.ps1        : 引数・JSON・カンマ区切りKWの正規化
+       - commit_policy_guard.ps1        : DA 1〜9判定、UGC除外、YMYL/エンタメ/性別ガード
+       - commit_serp_reconciler.ps1     : 生SERP上位10位弱席数との星数完全一致照合
+       - commit_sheet_state_loader.ps1  : 既存シートKW抽出・トークンマップ構築
+       - commit_sheet_dedup.ps1         : スプシ内重複排除・異性シート重複排除
+       - commit_genre_resolver.ps1      : 50ジャンルカタログとの厳密セマンティック照合
+       - commit_row_builder.ps1         : 同一行空き枠へのマージ・16列超過スプリット行挿入
+       - commit_row_formatter.ps1       : 25列標準行整形・星数範囲文字列生成
+       - sheet_atomic_writer.ps1        : Google Sheets APIによるアトミック書き込み
+    4. 入力パラメータ (Parameters):
+       - SiteName, Url, Da, WinningKws, Gender, GenreNumber, GenreName, DryRun など
+    5. 修正時の注意点:
+       - 黄金比率を崩すKWはスプシに登録せず、必ず stock_shelved.json へ安全退避すること。
+       - 事前検証（Test-NormalStateStandard）を通過しない行データは絶対にアトミック反映させないこと。
 #>
 
 [CmdletBinding(PositionalBinding=$false)]

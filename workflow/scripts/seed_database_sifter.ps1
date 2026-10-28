@@ -1,8 +1,20 @@
 <#
 .SYNOPSIS
-    seed_database_sifter.ps1
-    Single Responsibility: Sift SQLite verified_keywords for unsearched genre candidates with strict policy filters (YMYL, Entertainment, Gender).
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    seed_database_sifter.ps1 - ローカルDB適格KW抽出＆ポリシーフィルタモジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       SQLiteの verified_keywords テーブルから、コア単語を含み、かつ serp_cache に未登録の
+       高ボリューム（Vol >= 1900）KWを抽出し、YMYL・エンタメ・性別の各ポリシーガードで検証して適格候補を返す。
+    2. 準拠ルール:
+       - GEMINI.md 第1条: コア単語からのロングテール深掘り。
+       - YMYL（健康・医療・金融）、エンタメ（アニメ・ゲーム）、性別不一致KWの物理遮断。
+    3. 入力・出力仕様:
+       - Inputs : $CoreTokens, $Gender, $MinVolume, $Limit, $ExcludeKeywords, $ExcludeSerpKeywords, $SeenKeywords
+       - Outputs: hashtable[] @{ Keyword, Volume, Source = "DB_Verified" }
+    4. 修正時の注意点:
+       - 既にスプシに登録済みのKW、または既にSERP調査済みのKWは絶対に重複して返さないこと。
 #>
 
 $ErrorActionPreference = "Stop"

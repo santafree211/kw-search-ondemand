@@ -1,8 +1,24 @@
 <#
 .SYNOPSIS
-    serpapi_usage_tracker.ps1
-    Single Responsibility: Track SerpApi usage against daily (09:00 JST window) and monthly quotas and manage log schema.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    serpapi_usage_tracker.ps1 - SerpApi 09:00JST窓日次・月次クォータ集計＆ログ管理
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       SerpApiの実行ログテーブル（serpapi_call_logs）の初期化と、09:00 JSTリセット窓に基づく本日利用回数、
+       月間利用回数のリアルタイム集計、およびKW別最終検証日の取得を行う。
+    2. 準拠ルール:
+       - GEMINI.md 第5条: 09:00 JSTリセットに同期したクォータ枠管理。
+       - 日次7枠 / 月間240枠の物理リミット保護。
+    3. 入力・出力仕様:
+       - Get-SerpApiDailyUsage:
+           - Inputs : $DailyLimit (int), $MonthlyLimit (int)
+           - Outputs: PSCustomObject @{ CallsToday, DailyLimit, RemainingCalls, CallsThisMonth, MonthlyLimit, IsLimitReached, ... }
+       - Get-SerpApiKeywordLastVerifiedDate:
+           - Inputs : $Keyword (string)
+           - Outputs: PSCustomObject @{ IsVerified, LastVerifiedDate, DaysAgo }
+    4. 修正時の注意点:
+       - 日次集計の開始境界は 00:00 ではなく毎朝 09:00 JST であることに留意すること。
 #>
 
 $ErrorActionPreference = "Stop"

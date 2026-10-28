@@ -1,9 +1,18 @@
 <#
 .SYNOPSIS
-    commit_row_builder.ps1
-    Single Responsibility: Locate existing site domains, merge keywords into vacant row slots, and insert split continuation rows.
-    Architecture: Delegating formatting to commit_row_formatter.ps1.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    commit_row_builder.ps1 - スプレッドシート行マージ・スプリット分割管理モジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       スプレッドシートの既存行を走査し、同一ドメインのサイトが存在する場合はその行の空きKW列（最大16KW）へマージ。
+       16KWを超える場合は直後にスプリット継続行を新規挿入して全更新行データを生成する。
+    2. 入力・出力仕様:
+       - Inputs : $Header, $ExistingRows, $SiteName, $Url, $Da, $GenreNumber, $GenreName, $CommitKws, $SurveyDateFormatted, $KwStartCol
+       - Outputs: object[] (ヘッダー＋全データ行の完全な配列)
+    3. 修正時の注意点:
+       - 1行に格納できるキーワードは最大16列まで。超過分は同一ドメイン情報のスプリット継続行を作成して直後に挿入すること。
+       - 行自体のフォーマット作成は `commit_row_formatter.ps1` の `Build-SingleSiteRow` に委譲すること。
 #>
 
 $ErrorActionPreference = "Stop"

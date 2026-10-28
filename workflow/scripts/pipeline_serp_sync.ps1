@@ -1,8 +1,20 @@
 <#
 .SYNOPSIS
-    pipeline_serp_sync.ps1
-    Single Responsibility: Invoke SerpApi verification and sync/purge Google Sheets real-time evidence.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    pipeline_serp_sync.ps1 - Google Real SERP突合・0星パージ同期モジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       SerpApiの利用可能枠を判定し、スプレッドシート上のキーワードをGoogle実測リアルタイムSERPと照合。
+       弱席が失われたKW（0星）の自動パージと最新星数の同期を実行する。
+    2. 準拠ルール:
+       - GEMINI.md 第3条: 実測エビデンスに基づく星数確定（推測値の排除）。
+       - SerpApi厳格クォータ管理: 日次上限（7回/日）、月間上限（240回/月）を1コールも超過させない。
+    3. 入力・出力仕様:
+       - Inputs : $Gender ("both" | "female" | "male"), $MaxCallLimit (int), $DryRun (switch)
+       - Outputs: なし（スプシへの直接反映およびコンソールログ）
+    4. 修正時の注意点:
+       - SerpApi残枠が0以下の場合はリモート検索を行わず安全にスキップすること。
 #>
 
 $ErrorActionPreference = "Stop"

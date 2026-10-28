@@ -1,8 +1,17 @@
 <#
 .SYNOPSIS
-    commit_param_parser.ps1
-    Single Responsibility: Normalize input parameters, expand comma-separated keywords and ExtraArgs, and parse JSON input files.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    commit_param_parser.ps1 - コミット引数・JSON入力正規化モジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       `tools/sheet_commit.ps1` への入力（CLI引数、-SiteJsonPathファイル、カンマ区切り文字列、ExtraArgs）を
+       解析・平坦化し、正規化された単一の入力オブジェクトに整形して返す。
+    2. 入力・出力仕様:
+       - Inputs : $SiteJsonPath, $SiteName, $Url, $SiteKey, $Da, $OriginKw, $WinningKws, $GenreNumber, $GenreName, $ExtraArgs
+       - Outputs: PSCustomObject @{ SiteName, Url, SiteKey, Da, OriginKw, WinningKws (string[]), GenreNumber, GenreName }
+    3. 修正時の注意点:
+       - カンマ区切りのKW（例: "☆☆KW1, ☆☆☆KW2"）や余剰引数はすべて分解・トリムして WinningKws 配列にフラット化すること。
 #>
 
 $ErrorActionPreference = "Stop"

@@ -1,8 +1,23 @@
 <#
 .SYNOPSIS
-    engine_potato_harvester.ps1
-    Single Responsibility: Detect personal blog in SERP and harvest/evaluate top winning keywords.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    engine_potato_harvester.ps1 - 実測個人ブログ起点・芋づる式当たりKW発掘モジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       SERP上位10位内で捕捉された実測DA 1〜9の独立個人ブログからドメイン全体の上位流入KWを芋づる式に抽出し、
+       弱競合席が担保された当たりKWリスト（DomainKws）を構成する。
+    2. 準拠ルール:
+       - GEMINI.md 第2条: 行登録の主語は実測DA 1〜9の個人ブログのみ（UGCは不可）。
+       - 芋づる式数珠つなぎ（potato_digging_research スキル）の実装。
+    3. 入力・出力仕様:
+       - Inputs : $HitEntry, $OriginEval, $OriginKw, $Gender, $Tracker, $MaxTotalCalls, $CurrentApiCalls
+       - Outputs: PSCustomObject @{
+           Success, Domain, CleanUrl, Da, SiteTitle, DomainKws, ApiCallsMade, IsExhausted, ExhaustionError
+         }
+    4. 修正時の注意点:
+       - 抽出された各KWは即座にSERP弱席照合を実施し、星数およびVol >= 1900の実測エビデンスを付与すること。
+       - 既にスプシに登録済みのドメイン・URLはスキップすること。
 #>
 
 $ErrorActionPreference = "Stop"

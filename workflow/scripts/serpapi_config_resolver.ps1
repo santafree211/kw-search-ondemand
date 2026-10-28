@@ -1,8 +1,17 @@
 <#
 .SYNOPSIS
-    serpapi_config_resolver.ps1
-    Single Responsibility: Resolve SerpApi configuration and API key from file and environment variables.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    serpapi_config_resolver.ps1 - SerpApi設定およびAPIキー解決モジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       `workflow/config/serpapi_config.json` のロードおよび OS環境変数（Process ➔ User ➔ Machine スコープ）
+       から有効な SerpApi APIキーを探索・解決して設定オブジェクトを生成する。
+    2. 入力・出力仕様:
+       - Inputs : $ConfigPath (任意の設定ファイルパス)
+       - Outputs: PSCustomObject @{ api_key, daily_limit, monthly_limit, engine, gl, hl, num, timeout_seconds }
+    3. 修正時の注意点:
+       - APIキーのハードコードは厳禁。環境変数またはローカル設定ファイルからのみ安全に取得すること。
 #>
 
 $ErrorActionPreference = "Stop"

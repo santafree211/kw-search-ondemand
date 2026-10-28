@@ -1,13 +1,24 @@
 <#
 .SYNOPSIS
-    workflow/scripts/genre_seed_expander.ps1
-    Responsibility: Autonomously derive high-volume (>=1900) long-tail keywords WITHIN a specific genre
-    when catalog seeds are exhausted, preventing drift into entertainment or generic keywords.
-    Architecture: Lean Orchestrator delegating to single-responsibility modules:
-      - seed_modifier_combiner.ps1 (Head terms extraction, modifier combination, and Google autocomplete)
-      - seed_database_sifter.ps1 (Database candidate retrieval and YMYL/Entertainment/Gender safety guards)
-      - research_bulk_expand.ps1 (Ubersuggest match_keywords bulk expansion)
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    workflow/scripts/genre_seed_expander.ps1 - ジャンルシード拡張司令塔
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       特定ジャンルについて、シード枯渇時に自律派生（AI修飾子＋Googleサジェスト）を行い、
+       ローカルDB未検索KW抽出 ➔ 過去API履歴照合による未クエリシード選定 ➔ Ubersuggest一括展開を统括する。
+    2. 準拠ルール:
+       - GEMINI.md 第1条: シード枯渇時の自律深掘り（同一ジャンル内でのロングテール展開、無差別脱線の禁止）。
+       - GEMINI.md 第4条: 日次1回AIシード思考プロトコルとの連携（ai_daily_modifiers.json活用）。
+    3. 構成モジュール (Delegation Modules):
+       - seed_modifier_combiner.ps1 : コア単語抽出、AI修飾子ロード、Googleサジェスト合成
+       - seed_database_sifter.ps1   : ローカルDB適格KW抽出と各種ポリシー除外
+       - research_bulk_expand.ps1   : Ubersuggest match_keywords一括取得
+    4. 入力・出力仕様:
+       - Inputs : $GenreObj, $Gender, $MinVolume (1900), $Limit, $ExcludeKeywords, $ExcludeSerpKeywords, $DryRun
+       - Outputs: PSCustomObject @{ Keywords (PSCustomObject[]), ApiCalls, IsExhausted, ExhaustionError }
+    5. 修正時の注意点:
+       - 取得した新規KWは必ず verified_keywords テーブルにジャンルIDタグ（genre_id）を付与して保存すること。
 #>
 
 $ErrorActionPreference = "Stop"

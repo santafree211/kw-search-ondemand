@@ -1,8 +1,20 @@
 <#
 .SYNOPSIS
-    commit_serp_reconciler.ps1
-    Single Responsibility: Reconcile keyword star ratings against actual raw SERP cache top 10 weak seats.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    commit_serp_reconciler.ps1 - コミット前SERP星数実測突合モジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       コミット対象のキーワードについて、ローカル生SERPキャッシュ上位10位内の弱競合席数を厳密再計算し、
+       KWプレフィックスの星数（例: ☆☆☆）と完全一致しているか照合する。乖離があれば例外をスローして遮断する。
+    2. 準拠ルール:
+       - GEMINI.md 第3条: 3者突合照合監査と実測エビデンス（スプシ ✕ ルール ✕ Ubersuggest生データの一致）。
+    3. 入力仕様:
+       - $WinningKws : string[] (例: @("☆☆☆キーワード(5400)"))
+       - $Gender     : string ("female" | "male")
+    4. 修正時の注意点:
+       - 星3以上のKWは弱席数3席以上であれば合致とみなす（☆☆☆以上の上限クランプ互換）。
+       - キャッシュ内の弱席数が申告星数と異なる場合は、絶対にコミットを許可してはならない。
 #>
 
 $ErrorActionPreference = "Stop"

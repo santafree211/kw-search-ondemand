@@ -1,8 +1,27 @@
 <#
 .SYNOPSIS
-    commit_policy_guard.ps1
-    Single Responsibility: Enforce site eligibility (DA 1-9, non-UGC) and keyword policy guards (Gender, YMYL, Entertainment).
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    commit_policy_guard.ps1 - サイト適格性およびキーワードポリシー事前検証モジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       スプレッドシートへの行登録直前に、サイト（DA・UGC）およびキーワード（性別・YMYL・エンタメ）の
+       適格性を検証し、違反があれば即座に例外をスローして物理遮断する。
+    2. 準拠ルール:
+       - GEMINI.md 第2条: 行登録の主語は実測DA 1〜9の独立個人ブログのみ。
+       - GEMINI.md 第3条: 実質DA一桁の弱競合UGC（Yahoo知恵袋、note等）を行登録することは厳禁。
+       - 性別・YMYL・エンタメキーワードの厳格排除。
+    3. 入力仕様:
+       - $SiteName   : string (必須) サイト名
+       - $Url        : string (任意) サイトURL（ドメイン判定用）
+       - $Da         : int (必須) 実測ドメインオーソリティ (1〜9必須)
+       - $OriginKw   : string (任意) 芋づる起点キーワード
+       - $WinningKws : string[] (必須) コミット予定の当たりKWリスト
+       - $Gender     : string ("female" | "male")
+    4. 不変条件・修正時の注意点:
+       - UGC判定（Test-WeakCompetitor）でTrueとなったドメインは絶対にコミットを許可してはならない。
+       - DA 0 または DA 10以上のサイトは例外なく throw すること。
+       - YMYLおよびエンタメ判定で弾かれたKWは1件でも含まれていればバッチごとコミットを中止する。
 #>
 
 $ErrorActionPreference = "Stop"

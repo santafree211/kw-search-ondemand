@@ -1,8 +1,21 @@
 <#
 .SYNOPSIS
-    engine_candidate_sifter.ps1
-    Single Responsibility: Sift, filter, auto-expand, and prioritize keyword candidates for a genre.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    engine_candidate_sifter.ps1 - ジャンル候補キーワード抽出・シード拡張・Sランク優先ソート
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       指定ジャンルについて、ローカルDB未検索KWの走査 ➔ 不足時の自動シード拡張 ➔ ポリシー除外（YMYL/エンタメ/性別）
+       ➔ 未検索/キャッシュ分離 ➔ 悩み・比較等のSランク修飾子優先ソートを行い、高確率な候補リストを生成する。
+    2. 準拠ルール:
+       - GEMINI.md 第1条: カタログシード消化時の自律深掘り（同一ジャンル内でのロングテール展開）。
+       - GEMINI.md 第2条: ☆☆☆以上50%以上を達成するための「悩み・トラブル解決・比較」優先選定。
+    3. 入力・出力仕様:
+       - Inputs : $TargetGenre, $Gender, $Tracker, $MaxTotalCalls, $CurrentApiCalls, $DryRun
+       - Outputs: PSCustomObject @{ Candidates (優先順リスト), ApiCallsMade (実行コール数) }
+    4. 修正時の注意点:
+       - プレフィックス重複チェックを実施し、同一単語でSQLiteクエリが連打されないようキャッシュすること。
+       - 未検索KWが3件未満の場合は `Expand-GenreLongtailKeywords` を呼び出して新規単語を自律補充すること。
 #>
 
 $ErrorActionPreference = "Stop"

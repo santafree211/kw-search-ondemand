@@ -1,15 +1,32 @@
 <#
 .SYNOPSIS
-    research_engine.ps1
-    Responsibility: Single Unified Autonomous 50-Genre Core Research Engine.
-    Architecture: Ultra-Lean High-level Orchestration Pattern delegating to single-responsibility modules:
-      - engine_dedup_tracker.ps1 (URL, keyword & historical SERP deduplication state)
-      - engine_water_level_selector.ps1 (Lowest water-level genre selection & milestone control)
-      - engine_candidate_sifter.ps1 (Keyword selection, S-rank prioritization & auto-expansion)
-      - engine_serp_evaluator.ps1 (SERP cache/remote evaluation & personal blog logging)
-      - engine_potato_harvester.ps1 (Personal blog detection & domain keyword harvesting)
-      - engine_star3_gate.ps1 (Star-3 First architecture & atomic sheet commit / stock shelving)
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    tools/research_engine.ps1 - 50ジャンル均等探索コア司令塔
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       50ジャンルの中から「最も水位（件数）が低いジャンル」を選定し、キーワード候補抽出・SERP実測評価・
+       芋づる個人ブログ発見・星3先行コミットゲートを一連のループとしてオーケストレーションする。
+    2. 準拠ルール:
+       - GEMINI.md 第1条: 50ジャンル均等底上げ（最低水位ジャンルの優先探索）。
+       - GEMINI.md 第2条: 黄金比率（☆☆☆ >= 50%）維持。
+       - GEMINI.md 第3条: 実測エビデンス（Vol >= 1900, 弱席数完全一致）。
+    3. 構成モジュール (Delegation Modules):
+       - engine_dedup_tracker.ps1       : 全列URL・異性KW・SERPキャッシュの0ms HashSet重複排除
+       - engine_water_level_selector.ps1 : 最低水位ジャンル選定とマイルストーン自動進捗管理
+       - engine_candidate_sifter.ps1    : DB未検索KW抽出・シード拡張・悩み系Sランク優先ソート
+       - engine_serp_evaluator.ps1      : キャッシュ/リモートSERP評価・個人ブログ判定
+       - engine_potato_harvester.ps1    : 実測DA 1〜9個人ブログからの芋づる式KW抽出
+       - engine_star3_gate.ps1          : 星3先行ゲート（星3を含むバッチのみコミット、他はストック退避）
+    4. 入力パラメータ (Parameters):
+       - Gender                : "female" | "male"
+       - MaxTotalCalls         : 本バッチ許容最大API数
+       - MaxKwsPerGenreBatch   : 1ジャンルあたりの連続探索KW数 (デフォルト: 5)
+       - GenreMinId / MaxId    : 対象ジャンル番号 (1〜50)
+       - DryRun                : シミュレーション実行フラグ
+    5. 修正時の注意点:
+       - 本スクリプト内に直接SQLクエリやHTTPリクエストを記述せず、必ず上記モジュールに委譲すること。
+       - DryRun時は無限ループを防止するためコールカウンタを正しく進めること。
 #>
 
 param(

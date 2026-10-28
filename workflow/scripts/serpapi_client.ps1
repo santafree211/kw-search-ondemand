@@ -1,12 +1,25 @@
 <#
 .SYNOPSIS
-    workflow/scripts/serpapi_client.ps1
-    Responsibility: Client wrapper for SerpApi Google Search engine with strict daily quota limit (7 calls/day, 240/month).
-    Architecture: Lean Client orchestrating single-responsibility modules:
-      - serpapi_config_resolver.ps1 (Configuration & API key resolution)
-      - serpapi_usage_tracker.ps1 (09:00 JST window daily & monthly quota tracking)
-      - serpapi_cache_store.ps1 (Window cache checking, stored result retrieval, response saving)
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    workflow/scripts/serpapi_client.ps1 - SerpApi Google Search クライアント
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       SerpApi Google Search APIのリクエスト実行クライアント。
+       当日窓内キャッシュ確認 ➔ クォータ上限確認 ➔ リモートHTTPリクエスト送信 ➔ SQLiteログ保存
+       の一連の流れをオーケストレーションする。
+    2. 準拠ルール:
+       - GEMINI.md 第3条: 実測エビデンスに基づくリアルタイムGoogle SERPの取得。
+       - SerpApi厳格クォータ管理: 日次上限（7回/日）、月間上限（240回/月）の完全遵守。
+    3. 構成モジュール (Delegation Modules):
+       - serpapi_config_resolver.ps1 : 設定ロード・APIキー解決
+       - serpapi_usage_tracker.ps1   : 朝9時JST窓の利用状況集計・上限判定
+       - serpapi_cache_store.ps1     : 0sキャッシュ照合・過去保管SERP取得・SQLite保存
+    4. 入力・出力仕様:
+       - Inputs : $Keyword (string), $ApiKey (string), $ForceRefresh (switch), $DryRun (switch)
+       - Outputs: PSCustomObject @{ Keyword, IsExhausted, ExhaustionError, OrganicResults, FromCache, RawResponse }
+    5. 修正時の注意点:
+       - クォータ上限到達時（$usage.IsLimitReached=$true）は一切リモート通信を行わず、即座にIsExhausted=$trueを返すこと。
 #>
 
 $ErrorActionPreference = "Stop"

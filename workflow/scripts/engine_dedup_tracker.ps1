@@ -1,8 +1,21 @@
 <#
 .SYNOPSIS
-    engine_dedup_tracker.ps1
-    Single Responsibility: Maintain URL, cross-gender keyword, and historical SERP deduplication state.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    engine_dedup_tracker.ps1 - 重複排除・過去SERP高速HashSetトラッカー
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       スプレッドシート全列（URL、KW1〜16）、異性間シート、およびSQLite過去SERP履歴を走査し、
+       探索中の0ms高速重複判定を可能にするインメモリHashSet/Hashtableを初期化・保持する。
+    2. 準拠ルール:
+       - GEMINI.md 第2条: スプシ内での重複登録厳禁。
+       - GEMINI.md 第3条: 異性シートKWとの重複排除。
+    3. 入力・出力仕様:
+       - Inputs : $SpreadsheetId, $TargetSheetName, $Gender, $KwStartCol
+       - Outputs: PSCustomObject @{ RegisteredUrls, RegisteredKws, ExistingKws, SearchedSerpKeywords, OppositeGenderKws }
+    4. 修正時の注意点:
+       - URL判定はドメイン単位（www.除去、小文字化）で正規化すること。
+       - KW判定はスペース区切りトークンをソートして結合し、語順の異なる同義KWも確実に弾くこと。
 #>
 
 $ErrorActionPreference = "Stop"

@@ -1,8 +1,20 @@
 <#
 .SYNOPSIS
-    commit_genre_resolver.ps1
-    Single Responsibility: Resolve Genre ID and Genre Name semantically against catalog seeds without arbitrary fallback.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    commit_genre_resolver.ps1 - ジャンル厳密セマンティック解決モジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       コミット対象のサイト名およびキーワード群に基づき、50ジャンルカタログ（genre_catalog_[gender].json）の
+       シード定義と厳密に照合してGenreNumber（例: M-12）とGenreName（例: 釣り・アウトドア）を確定する。
+    2. 準拠ルール:
+       - GEMINI.md 第1条: 50ジャンル均等底上げ（無差別脱線の防止）。
+       - 根拠なきフォールバック（適当なジャンルへの決め打ち割り当て）の厳禁。
+    3. 入力・出力仕様:
+       - Inputs : $GenreNumber, $GenreName, $SiteName, $CommitKws, $Gender, $ConfigDir
+       - Outputs: PSCustomObject @{ Id, Name }
+    4. 修正時の注意点:
+       - カタログ内のいずれのジャンルとも一致しない場合は、例外（throw）を発生させてコミットを中止すること。
 #>
 
 $ErrorActionPreference = "Stop"

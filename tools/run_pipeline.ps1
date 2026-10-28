@@ -1,15 +1,35 @@
 <#
 .SYNOPSIS
-    tools/run_pipeline.ps1
-    Responsibility: Single Unified Autonomous Pipeline Runner for 50-genre water-leveling research.
-    Architecture: High-level Orchestration Pattern delegating to single-responsibility modules:
-      - pipeline_preflight_guard.ps1 (API connectivity & quota check)
-      - pipeline_gender_balancer.ps1 (Water-level gender rotation)
-      - research_engine.ps1 (Genre longtail expansion & personal blog discovery)
-      - pipeline_exhaustion_detector.ps1 (Exhaustion vs transient error classification)
-      - pipeline_serp_sync.ps1 (Google real-time SERP verification & sheet cleanup)
-      - sheet_reconcile.ps1 (3-way reconciliation audit on completion)
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    tools/run_pipeline.ps1 - 50ジャンル均等底上げ自律リサーチメインパイプライン
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務 (Single Responsibility):
+       男女スプレッドシートの登録進捗（件数）を監視し、女性・男性を交互に自動ローテーションしながら
+       50ジャンルの均等底上げ探索・SerpApiリアルタイム照合・終了監査を统括実行する自律メイン司令塔。
+    2. 準拠ルール (GEMINI.md Standards):
+       - 第1条: 50ジャンル均等底上げ（男女比率・ジャンル間格差の是正）。
+       - 第2条: 黄金比率（50:25:25）の維持。
+       - 第5条: デイリー上限完全活用（物理的429/403枯渇まで自律継続）。
+       - 第3条: 終了時監査義務（終了時にsheet_reconcile.ps1で3者突合検証）。
+    3. 構成モジュール (Delegation Architecture):
+       - pipeline_preflight_guard.ps1     : 起動前のAPI疎通・デイリー残枠事前確認
+       - pipeline_gender_balancer.ps1     : シート件数比較・開始性別決定・男女交代
+       - research_engine.ps1              : ジャンル別ロングテール展開・芋づる個人ブログ発掘
+       - pipeline_exhaustion_detector.ps1 : 出力ログからの物理枯渇(403/429)と一時的通信遅延の分類
+       - pipeline_serp_sync.ps1           : Google実測SERP照合・0星パージ同期
+       - sheet_reconcile.ps1              : 終了時3者突合監査
+    4. 入力パラメータ (Parameters):
+       - Gender               : "both" | "female" | "male" (デフォルト: both)
+       - MaxTotalCalls        : 本日許容する最大APIリクエスト数 (デフォルト: 5000)
+       - MaleBatchCalls       : 男性1バッチあたりのAPIコール枠 (デフォルト: 1600)
+       - FemaleBatchCalls     : 女性1バッチあたりのAPIコール枠 (デフォルト: 960)
+       - MaxKwsPerGenreBatch  : 1ジャンルあたり一度に処理する最大KW数 (デフォルト: 160)
+       - GenreMinId / MaxId   : 探索対象ジャンル範囲 (1〜50)
+       - DryRun               : スイッチ (APIリクエストやスプシ書き込みを行わないシミュレーション)
+    5. 不変条件・修正時の注意点 (Guardrails for AI):
+       - 一時的な通信遅延（タイムアウト）でプロセスを即座に落とさず、自己修復リトライを継続すること。
+       - 探索終了時は必ず男女両シートの3者突合監査（sheet_reconcile.ps1）を実行すること。
 #>
 
 param(

@@ -1,8 +1,20 @@
 <#
 .SYNOPSIS
-    engine_water_level_selector.ps1
-    Single Responsibility: Select the next lowest water-level genre and manage milestone advancement.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    engine_water_level_selector.ps1 - 最低水位ジャンル選定＆マイルストーン管理
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       50ジャンルの登録進捗をリアルタイム集計し、現在マイルストーン（初期目標: 全ジャンル18件）に達していない
+       「最も登録件数が少ないジャンル」をボトムアップで選定・返却する。全ジャンル到達時はマイルストーンを自動繰り上げる。
+    2. 準拠ルール:
+       - GEMINI.md 第1条: 50ジャンル均等底上げ（マンガや100均など特定ジャンルへの偏重を禁止）。
+    3. 入力・出力仕様:
+       - Inputs : $Gender, $GenreMinId (int), $GenreMaxId (int), $VisitedGenres (hashtable)
+       - Outputs: PSCustomObject (選定されたジャンルオブジェクト @{ Id, Name, Seeds, TotalCount... }) または $null
+    4. 修正時の注意点:
+       - 1サイクル内で同一ジャンルばかりが連続選定されないよう、$VisitedGenres hashtableで訪問済みを管理すること。
+       - 全対象ジャンルがマイルストーンに到達した場合は、自動的にTargetを+2して底上げを継続すること。
 #>
 
 $ErrorActionPreference = "Stop"

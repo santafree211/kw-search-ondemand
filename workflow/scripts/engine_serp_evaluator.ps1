@@ -1,8 +1,23 @@
 <#
 .SYNOPSIS
-    engine_serp_evaluator.ps1
-    Single Responsibility: Fetch SERP (cache or remote), evaluate star rating, and log candidate personal blogs.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    engine_serp_evaluator.ps1 - SERP取得・星数判定・個人ブログ検出モジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       候補キーワードのSERP（検索結果上位10位）をキャッシュまたはリモートから取得し、厳格な星数評価
+       （個人ブログDA 1〜9 ＋ 弱競合UGCの合計）を実施。上位10位に個人ブログが存在する場合は抽出して返す。
+    2. 準拠ルール:
+       - GEMINI.md 第3条: 実測エビデンスに基づく星数確定（推測・仮置きの厳禁）。
+       - 0星キーワードの即時パージ・スキップ。
+    3. 入力・出力仕様:
+       - Inputs : $Keyword, $Volume, $Gender, $TargetGenre, $Tracker, $MaxTotalCalls, $CurrentApiCalls
+       - Outputs: PSCustomObject @{
+           Keyword, EvalHit, HitPersonalBlog, ApiCallsMade, IsSkipped, IsExhausted, ExhaustionError
+         }
+    4. 修正時の注意点:
+       - 上位10位にDA 1〜9の個人ブログが含まれている場合のみ $HitPersonalBlog に格納し、芋づる発掘へと繋ぐこと。
+       - 判定された個人ブログは SQLite の candidate_personal_blogs テーブルへ即座に記録すること。
 #>
 
 $ErrorActionPreference = "Stop"

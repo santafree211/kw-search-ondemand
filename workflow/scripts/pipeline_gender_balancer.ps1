@@ -1,8 +1,23 @@
 <#
 .SYNOPSIS
-    pipeline_gender_balancer.ps1
-    Single Responsibility: Inspect male & female sheet keyword counts to determine starting gender and manage rotation.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    pipeline_gender_balancer.ps1 - 男女シート件数バランス判定＆ローテーションモジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       男女スプレッドシートの登録KW件数をリアルタイム集計し、件数の少ない側を優先して開始性別を決定。
+       探索ループごとに交互にローテーションする順序を管理する。
+    2. 準拠ルール:
+       - GEMINI.md 第1条: 男女交互均等底上げ（特定性別への偏重防止）。
+    3. 入力・出力仕様:
+       - Get-StartingGenderRotation:
+           - Inputs : $TargetGenderMode ("both" | "female" | "male")
+           - Outputs: PSCustomObject @{ StartingGender, MaleCount, FemaleCount, Rotations }
+       - Switch-Gender:
+           - Inputs : $CurrentGender ("female" | "male")
+           - Outputs: 交代後の性別文字列 ("male" | "female")
+    4. 修正時の注意点:
+       - 片方の性別のみ指定された場合（例: -Gender male）はローテーションを行わず単一性別を維持すること。
 #>
 
 $ErrorActionPreference = "Stop"

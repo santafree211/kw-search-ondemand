@@ -1,8 +1,24 @@
 <#
 .SYNOPSIS
-    serpapi_cache_store.ps1
-    Single Responsibility: Check SerpApi cache, retrieve zero-cost stored SERPs, and save API responses to SQLite.
-    Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
+    serpapi_cache_store.ps1 - SerpApiキャッシュ照合＆レスポンス永続化モジュール
+
+.DESCRIPTION
+    【設計メモ (AI Maintenance & Architecture Guide)】
+    1. 単一責務:
+       SerpApiによるAPI消費をゼロにするための当日窓内キャッシュ照合、過去保管SERP（Get-SerpApiStoredResult）の取得、
+       および新規リモート実行結果のSQLiteへの安全な永続化を担当する。
+    2. 入力・出力仕様:
+       - Find-SerpApiWindowCache:
+           - Inputs : $Keyword (string)
+           - Outputs: PSCustomObject @{ Found (bool), OrganicResults, RawResponse }
+       - Get-SerpApiStoredResult:
+           - Inputs : $Keyword (string)
+           - Outputs: PSCustomObject @{ Found (bool), OrganicResults, FetchedAt, ... }
+       - Save-SerpApiResponse:
+           - Inputs : $Keyword, $Engine, $Gl, $Hl, $HttpStatus, $OrganicCount, $ResponseJson
+           - Outputs: なし（SQLite非同期コミット）
+    3. 修正時の注意点:
+       - JSON保存時はシングルクォートのエスケープ（.Replace("'", "''")）を欠かさないこと。
 #>
 
 $ErrorActionPreference = "Stop"
