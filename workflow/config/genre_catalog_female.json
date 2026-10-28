@@ -1,11 +1,11 @@
 {
-  "target_per_genre": 1200,
+  "target_per_genre": 300,
   "max_genres": 50,
   "gender": "female",
   "golden_ratio": {
-    "star3_target": 600,
-    "star2_target": 300,
-    "star1_target": 300
+    "star3_target": 150,
+    "star2_target": 75,
+    "star1_target": 75
   },
   "genres": [
     {

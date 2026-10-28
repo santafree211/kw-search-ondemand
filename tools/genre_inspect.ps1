@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
     tools\genre_inspect.ps1
-    Responsibility: Inspect progress across 50 article genres (Target: 1,200 keywords each, total 60,000).
+    Responsibility: Inspect progress across 50 article genres (Target: 300 keywords each, total 15,000 (Star3+: 150 each)).
     Displays current distribution, ratio compliance per genre, and recommends the next priority genre.
     Implementation: Pure ASCII for full PowerShell 5.1 compatibility.
 #>
@@ -24,12 +24,12 @@ $ErrorActionPreference = "Stop"
 $report = Get-GenreProgressReport -Gender $Gender
 
 Write-Output "=========================================================="
-Write-Output "=== 50-GENRE TARGET PROGRESS (1,200 KW/Genre, 60,000 Total) ==="
+Write-Output "=== 50-GENRE TARGET PROGRESS (300 KW/Genre, 15,000 Total) ==="
 Write-Output "=========================================================="
 Write-Output "Profile: $($report.Gender) | Sheet: $($report.SheetTitle)"
 Write-Output "Total Genres: $($report.TotalGenres) | Target per Genre: $($report.TargetPerGenre)"
 Write-Output "Overall Registered KWs: $($report.TotalRegisteredKws) / $($report.OverallTarget) ($($report.OverallProgressPercent)%)"
-Write-Output "Completed Genres (1200+): $($report.CompletedGenresCount) / $($report.TotalGenres)"
+Write-Output "Completed Genres (300+): $($report.CompletedGenresCount) / $($report.TotalGenres)"
 
 $wl = $report.WaterLevel
 Write-Output "`n[Parallel Water-Leveling (Parallel Progress Status)]"
