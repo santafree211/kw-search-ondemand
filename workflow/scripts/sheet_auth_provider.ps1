@@ -76,8 +76,16 @@ function Get-GoogleAccessToken {
     $jwt = "$inputStr.$sigEnc"
 
     $body = @{ grant_type = "urn:ietf:params:oauth:grant-type:jwt-bearer"; assertion = $jwt }
-    $tokenResponse = Invoke-RestMethod -Uri "https://oauth2.googleapis.com/token" -Method Post -Body $body
-    return $tokenResponse.access_token
+    $maxRetry = 3
+    for ($i = 1; $i -le $maxRetry; $i++) {
+        try {
+            $tokenResponse = Invoke-RestMethod -Uri "https://oauth2.googleapis.com/token" -Method Post -Body $body -TimeoutSec 10
+            return $tokenResponse.access_token
+        } catch {
+            if ($i -eq $maxRetry) { throw $_ }
+            Start-Sleep -Seconds 2
+        }
+    }
 }
 
 
