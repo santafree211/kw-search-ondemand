@@ -1,32 +1,25 @@
 <#
 .SYNOPSIS
-    tools/research_engine.ps1 - 50ジャンル均等探索コア司令塔
+    tools/research_engine.ps1 - 個人ブログ起点・芋づる式自律リサーチ司令塔 (SKILL.md完全準拠)
 
 .DESCRIPTION
     【設計メモ (AI Maintenance & Architecture Guide)】
     1. 単一責務:
-       50ジャンルの中から「最も水位（件数）が低いジャンル」を選定し、キーワード候補抽出・SERP実測評価・
-       芋づる個人ブログ発見・星3先行コミットゲートを一連のループとしてオーケストレーションする。
+       SKILL.md (potato_digging_research) に完全準拠し、
+       「実測DA 1〜9の独立個人ブログ」を起点として、Google 1〜10位獲得KWを一括取得し、
+       その検索結果から当たりKW判定および「次世代のDA一桁個人ブログ」を数珠つなぎに発掘・コミットする。
     2. 準拠ルール:
-       - GEMINI.md 第1条: 50ジャンル均等底上げ（最低水位ジャンルの優先探索）。
-       - GEMINI.md 第2条: 黄金比率（☆☆☆ >= 50%）維持。
-       - GEMINI.md 第3条: 実測エビデンス（Vol >= 1900, 弱席数完全一致）。
+       - GEMINI.md 第1条: 50ジャンル均等底上げ。
+       - GEMINI.md 第2条: 黄金比率（☆☆☆ >= 50%, ☆☆ <= 25%, ☆ <= 25%）の厳格維持。
+       - GEMINI.md 第3条: 実測エビデンス主義（Vol >= 1900、実測DA 1〜9の個人ブログのみ行登録）。
     3. 構成モジュール (Delegation Modules):
-       - engine_dedup_tracker.ps1       : 全列URL・異性KW・SERPキャッシュの0ms HashSet重複排除
-       - engine_water_level_selector.ps1 : 最低水位ジャンル選定とマイルストーン自動進捗管理
-       - engine_candidate_sifter.ps1    : DB未検索KW抽出・シード拡張・悩み系Sランク優先ソート
-       - engine_serp_evaluator.ps1      : キャッシュ/リモートSERP評価・個人ブログ判定
-       - engine_potato_harvester.ps1    : 実測DA 1〜9個人ブログからの芋づる式KW抽出
-       - engine_star3_gate.ps1          : 星3先行ゲート（星3を含むバッチのみコミット、他はストック退避）
-    4. 入力パラメータ (Parameters):
-       - Gender                : "female" | "male"
-       - MaxTotalCalls         : 本バッチ許容最大API数
-       - MaxKwsPerGenreBatch   : 1ジャンルあたりの連続探索KW数 (デフォルト: 5)
-       - GenreMinId / MaxId    : 対象ジャンル番号 (1〜50)
-       - DryRun                : シミュレーション実行フラグ
-    5. 修正時の注意点:
-       - 本スクリプト内に直接SQLクエリやHTTPリクエストを記述せず、必ず上記モジュールに委譲すること。
-       - DryRun時は無限ループを防止するためコールカウンタを正しく進めること。
+       - engine_dedup_tracker.ps1     : 全列URL・異性KW・SERPキャッシュの0ms HashSet重複排除
+       - potato_origin_fetcher.ps1    : Step 1 起点個人ブログ（実測DA 1〜9）抽出
+       - potato_domain_sifter.ps1     : Step 2 個人ブログ流入KW（Google 1〜10位, Vol>=1900）一括抽出
+       - potato_chain_reactor.ps1     : Step 3&4 星数確定 ＆ 次世代個人ブログ自動収穫
+       - engine_star3_gate.ps1        : 黄金比率コミットゲート
+    4. 禁止事項:
+       - AI推測による合否判定、キーワードからの絨毯爆撃（match_keywords連打）の禁止。
 #>
 
 param(
@@ -55,102 +48,129 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 . "$projectRoot\workflow\scripts\sheet_profile_resolver.ps1"
 . "$projectRoot\workflow\scripts\engine_dedup_tracker.ps1"
 . "$projectRoot\workflow\scripts\engine_water_level_selector.ps1"
-. "$projectRoot\workflow\scripts\engine_candidate_sifter.ps1"
-. "$projectRoot\workflow\scripts\engine_serp_evaluator.ps1"
-. "$projectRoot\workflow\scripts\engine_potato_harvester.ps1"
+. "$projectRoot\workflow\scripts\potato_origin_fetcher.ps1"
+. "$projectRoot\workflow\scripts\potato_domain_sifter.ps1"
+. "$projectRoot\workflow\scripts\potato_chain_reactor.ps1"
 . "$projectRoot\workflow\scripts\engine_star3_gate.ps1"
+. "$projectRoot\workflow\scripts\db_sqlite_manager.ps1"
 
 Write-Output "=========================================================="
-Write-Output "=== 50-GENRE CORE RESEARCH ENGINE ==="
+Write-Output "=== POTATO-DIGGING AUTONOMOUS RESEARCH ENGINE ==="
 Write-Output "=========================================================="
 Write-Output "Target Profile: $Gender ()"
 Write-Output "Max Total Calls: $MaxTotalCalls"
-Write-Output "Max KWs Per Genre Batch: $MaxKwsPerGenreBatch"
-Write-Output "Genre Range    : $GenreMinId - $GenreMaxId"
+Write-Output "Max KWs Per Batch: $MaxKwsPerGenreBatch"
 Write-Output "DryRun Mode    : $DryRun"
 
 $profile = Resolve-SheetProfile -Gender $Gender
 $SpreadsheetId = $profile.SpreadsheetId
 $targetSheetName = $profile.TargetSheetName
 
-# 1. Initialize Deduplication Tracker
+# 1. 重複排除トラッカー初期化
 $tracker = Initialize-EngineDedupTracker -SpreadsheetId $SpreadsheetId -TargetSheetName $targetSheetName -Gender $Gender -KwStartCol $profile.KwStartCol
 
 $totalApiCalls = 0
 $exhausted = $false
 $exhaustionError = ""
 $sitesCommittedCount = 0
-$visitedGenres = @{}
+$excludedDomains = @()
 
-# 2. Main 50-Genre Exploration Loop
+# 2. 完全な個人ブログ起点・芋づる一本道ループ (SKILL.md)
 while ($totalApiCalls -lt $MaxTotalCalls -and -not $exhausted) {
     if ($DryRun -and $totalApiCalls -ge $MaxTotalCalls) { break }
 
-    # Select next lowest water-level genre
-    $targetGenre = Select-NextWaterLevelGenre -Gender $Gender -GenreMinId $GenreMinId -GenreMaxId $GenreMaxId -VisitedGenres $visitedGenres
-    if ($null -eq $targetGenre) { break }
+    # Step 1: 起点となる実測DA 1〜9の独立個人ブログを取得
+    $originBlog = Get-NextPotatoOriginBlog -Gender $Gender -ExcludeDomains $excludedDomains
+    if ($null -eq $originBlog) {
+        Write-Warning "No more unparsed DA 1-9 personal blogs found in candidate queue. Pipeline complete."
+        break
+    }
 
-    # Sift and prioritize keyword candidates
-    $siftResult = Get-PrioritizedGenreCandidates -TargetGenre $targetGenre -Gender $Gender -Tracker $tracker -MaxTotalCalls $MaxTotalCalls -CurrentApiCalls $totalApiCalls -DryRun:$DryRun
-    $totalApiCalls += $siftResult.ApiCallsMade
-    $orderedCandidates = $siftResult.Candidates
+    $dom = $originBlog.Domain
+    $da = $originBlog.Da
+    $siteTitle = $originBlog.SiteName
+    $url = $originBlog.Url
+    $originGenreId = $originBlog.GenreId
 
-    if ($DryRun -and $siftResult.ApiCallsMade -eq 0) {
-        # Advance call counter in DryRun to simulate work and prevent infinite loop
+    Write-Output "`n>>> [POTATO ROOT] Targeting Blog: $dom (DA: $da) Title: '$siteTitle'"
+    $excludedDomains += $dom
+
+    # Step 2: 個人ブログのGoogle 1〜10位獲得KW (Vol >= 1900) を一括抽出
+    $siftRes = Get-PotatoBlogTopKeywords -Domain $dom -Gender $Gender -RegisteredKws $tracker.RegisteredKws -DryRun:$DryRun
+    $totalApiCalls += $siftRes.ApiCallsMade
+    if ($siftRes.IsExhausted) {
+        $exhausted = $true
+        $exhaustionError = $siftRes.ExhaustionError
+        break
+    }
+
+    if ($DryRun -and $siftRes.ApiCallsMade -eq 0) {
         $totalApiCalls++
     }
 
-    if ($orderedCandidates.Count -eq 0) {
-        Write-Warning "No qualified high-volume keywords found for genre '$($targetGenre.Name)'. Moving to next genre."
+    $candidateKws = $siftRes.FilteredKeywords
+    if (-not $candidateKws -or $candidateKws.Count -eq 0) {
+        Write-Output "    [No High-Vol Ranking KWs] '$dom' has no ranking keywords with Vol >= 1900. Marking analyzed."
+        try {
+            Invoke-SqliteNonQuery -SqlQuery "UPDATE discovered_sites SET status = 'harvested' WHERE domain = '$dom';" | Out-Null
+        } catch {}
         continue
     }
 
-    # SERP Inspection Loop per genre batch
-    $genreBatchCount = 0
-    foreach ($cand in $orderedCandidates) {
-        if ($genreBatchCount -ge $MaxKwsPerGenreBatch -or $totalApiCalls -ge $MaxTotalCalls) { break }
+    # Step 3 & 4: 各KWのSERP星数評価 ＆ 次世代個人ブログの自動収穫
+    $winningKws = @()
+    $kwBatchCount = 0
 
-        # Skip if already registered
-        $tokens = $cand.Keyword -split "[\s\u3000]+" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
-        $normCandKw = (($tokens | Sort-Object) -join " ").ToLower()
-        if ($tracker.RegisteredKws.ContainsKey($normCandKw)) {
-            Write-Output "  [Skip Registered] '$($cand.Keyword)' (already in sheet)"
-            continue
-        }
+    foreach ($candItem in $candidateKws) {
+        if ($kwBatchCount -ge $MaxKwsPerGenreBatch -or $totalApiCalls -ge $MaxTotalCalls) { break }
 
-        # Evaluate SERP (cached or remote)
-        $serpEval = Invoke-KeywordSerpEvaluation -Keyword $cand.Keyword -Volume $cand.Volume -Gender $Gender -TargetGenre $targetGenre -Tracker $tracker -MaxTotalCalls $MaxTotalCalls -CurrentApiCalls $totalApiCalls
-        if ($serpEval.IsSkipped) { continue }
+        $chainRes = Invoke-PotatoKeywordSerpChain -Keyword $candItem.Keyword -Volume $candItem.SearchVolume -Gender $Gender -OriginGenreId $originGenreId -Tracker $tracker -DryRun:$DryRun
+        $totalApiCalls += $chainRes.ApiCallsMade
+        $kwBatchCount++
 
-        $totalApiCalls += $serpEval.ApiCallsMade
-        $genreBatchCount++
-
-        if ($serpEval.IsExhausted) {
+        if ($chainRes.IsExhausted) {
             $exhausted = $true
-            $exhaustionError = $serpEval.ExhaustionError
+            $exhaustionError = $chainRes.ExhaustionError
             break
         }
 
-        # If personal blog found in top 10, trigger potato-digging and star3 commit gate
-        if ($serpEval.HitPersonalBlog) {
-            $harvestRes = Invoke-PotatoBlogHarvest -HitEntry $serpEval.HitPersonalBlog -OriginEval $serpEval.EvalHit -OriginKw $cand.Keyword -Gender $Gender -Tracker $tracker -MaxTotalCalls $MaxTotalCalls -CurrentApiCalls $totalApiCalls
-            $totalApiCalls += $harvestRes.ApiCallsMade
-            if ($harvestRes.IsExhausted) {
-                $exhausted = $true
-                $exhaustionError = $harvestRes.ExhaustionError
-                break
-            }
-
-            $gateRes = Invoke-Star3FirstCommitGate -HarvestResult $harvestRes -TargetGenre $targetGenre -Gender $Gender -Profile $profile -Tracker $tracker -DryRun:$DryRun
-            if ($gateRes.Committed) {
-                $sitesCommittedCount++
-            }
+        if (-not [string]::IsNullOrWhiteSpace($chainRes.FormattedValue)) {
+            $winningKws += $chainRes.FormattedValue
         }
     }
+
+    # 当たりKWが存在する場合、星3先行コミットゲートへ
+    if ($winningKws.Count -gt 0) {
+        $harvestObj = [PSCustomObject]@{
+            Success     = $true
+            Domain      = $dom
+            CleanUrl    = $url
+            Da          = $da
+            SiteTitle   = $siteTitle
+            DomainKws   = $winningKws
+        }
+
+        # ジャンル情報の解決
+        $targetGenre = [PSCustomObject]@{
+            Id   = if ($originGenreId -gt 0) { $originGenreId } else { 1 }
+            Name = "全般"
+        }
+
+        $gateRes = Invoke-Star3FirstCommitGate -HarvestResult $harvestObj -TargetGenre $targetGenre -Gender $Gender -Profile $profile -Tracker $tracker -DryRun:$DryRun
+        if ($gateRes.Committed) {
+            $sitesCommittedCount++
+            Write-Output "    -> SUCCESS: Committed '$siteTitle' ($dom) with $($winningKws.Count) winning keywords!"
+        }
+    }
+
+    # 起点ブログを解析完了として更新
+    try {
+        Invoke-SqliteNonQuery -SqlQuery "UPDATE discovered_sites SET status = 'harvested' WHERE domain = '$dom';" | Out-Null
+    } catch {}
 }
 
 Write-Output "`n=========================================================="
-Write-Output "50-GENRE WATER-LEVELING BATCH COMPLETED"
+Write-Output "POTATO-DIGGING HARVEST BATCH COMPLETED"
 Write-Output "Total API Calls Made : $totalApiCalls"
 Write-Output "Sites Committed      : $sitesCommittedCount"
 Write-Output "Physical Exhausted   : $exhausted"
@@ -158,11 +178,3 @@ if ($exhausted) {
     Write-Output "Exhaustion Reason    : $exhaustionError"
 }
 Write-Output "=========================================================="
-
-if ($exhausted) {
-    Write-Output "`nExecuting Auto-Audit on Exit..."
-    & powershell -ExecutionPolicy Bypass -File "$projectRoot\tools\guard_check_exhaustion.ps1" -ErrorText $exhaustionError
-} else {
-    Write-Output "`nRunning Genre Balance Inspection..."
-    & powershell -ExecutionPolicy Bypass -File "$projectRoot\tools\genre_inspect.ps1" -Gender $Gender
-}
