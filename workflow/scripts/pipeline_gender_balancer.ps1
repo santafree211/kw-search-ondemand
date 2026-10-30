@@ -72,5 +72,9 @@ function Switch-PipelineGender {
     if ($Mode -ne "both") {
         return $CurrentGender
     }
-    return if ($CurrentGender -eq "male") { "female" } else { "male" }
+    if ($CurrentGender -eq "male") {
+        return "female"
+    } else {
+        return "male"
+    }
 }
