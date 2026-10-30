@@ -1,0 +1,83 @@
+{
+  "version": "1.0.0-male",
+  "description": "Regex patterns and domain rules for weak UGC/CGM/community competitors in male keyword intent (virtually DA 1-9 equivalent seats)",
+  "categories": {
+    "qa_community": {
+      "name": "Q&A and Question Services (Male/General)",
+      "reason": "Amateur short answers, opinions, lack of structured SEO, easily beaten by dedicated guide",
+      "patterns": [
+        "chiebukuro\\.yahoo\\.co\\.jp",
+        "detail\\.chiebukuro\\.yahoo\\.co\\.jp",
+        "oshiete\\.goo\\.ne\\.jp",
+        "okwave\\.jp",
+        "jp\\.quora\\.com",
+        "q\\.hatena\\.ne\\.jp",
+        "peing\\.net",
+        "marshmallow-qa\\.com",
+        "mond\\.how",
+        "ask\\.fm"
+      ]
+    },
+    "curation_sns_bbs": {
+      "name": "Anonymous Forums and SNS Curations",
+      "reason": "Raw user thread dumps, emotional debates, fragment discussions",
+      "patterns": [
+        "5ch\\.net",
+        "2ch\\.sc",
+        "open2ch\\.net",
+        "togetter\\.com",
+        "min\\.togetter\\.com",
+        "twilog\\.togetter\\.com",
+        "b\\.hatena\\.ne\\.jp"
+      ]
+    },
+    "knowledge_experience_ugc": {
+      "name": "Experience Notes and Technical Scratchpads",
+      "reason": "Casual personal journal, daily thoughts, short problem-solving snippets without comprehensive SEO",
+      "patterns": [
+        "note\\.com",
+        "qiita\\.com",
+        "zenn\\.dev",
+        "teratail\\.com"
+      ]
+    },
+    "subculture_review_wiki": {
+      "name": "Subculture, Book, Film Reviews and Volunteer Wikis",
+      "reason": "Short user impressions under 250 characters or basic volunteer wiki tables",
+      "patterns": [
+        "bookmeter\\.com",
+        "booklog\\.jp",
+        "filmarks\\.com",
+        "w\\.atwiki\\.jp",
+        "wikiwiki\\.jp",
+        "seesaawiki\\.jp",
+        "syosetu\\.com",
+        "ncode\\.syosetu\\.com",
+        "kakuyomu\\.jp"
+      ]
+    },
+    "free_blog_diary": {
+      "name": "Free Blog and Diary Platforms (Male-frequent)",
+      "reason": "Casual personal diary, daily lifestyle thoughts, zero SEO heading optimization",
+      "patterns": [
+        "hatenablog\\.(com|jp)",
+        "hateblo\\.jp",
+        "hatenadiary\\.(jp|com)",
+        "(blog|livedoor)\\.livedoor\\.(jp|blog)",
+        "ldblog\\.jp",
+        "doorblog\\.jp",
+        "blog\\.jp",
+        "blog\\.fc2\\.com",
+        "fc2\\.com",
+        "ameblo\\.jp",
+        "amebaownd\\.com",
+        "seesaa\\.net",
+        "sblo\\.jp",
+        "blog\\.goo\\.ne\\.jp",
+        "plaza\\.rakuten\\.co\\.jp",
+        "exblog\\.jp",
+        "cocolog-nifty\\.com"
+      ]
+    }
+  }
+}

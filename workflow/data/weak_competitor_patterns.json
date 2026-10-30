@@ -1,0 +1,117 @@
+{
+  "version": "1.0.0",
+  "description": "Regex patterns and domain rules for weak UGC/CGM/community competitors (virtually DA 1-9 equivalents)",
+  "categories": {
+    "qa_community": {
+      "name": "Q&A and Question Services",
+      "reason": "Amateur short answers, opinions, lack of structured SEO, easily beaten by dedicated guide",
+      "patterns": [
+        "chiebukuro\\.yahoo\\.co\\.jp",
+        "detail\\.chiebukuro\\.yahoo\\.co\\.jp",
+        "oshiete\\.goo\\.ne\\.jp",
+        "okwave\\.jp",
+        "komachi\\.yomiuri\\.co\\.jp",
+        "jp\\.quora\\.com",
+        "q\\.hatena\\.ne\\.jp",
+        "chieco\\.cosme\\.net",
+        "peing\\.net",
+        "marshmallow-qa\\.com",
+        "mond\\.how",
+        "ask\\.fm"
+      ]
+    },
+    "women_community": {
+      "name": "Women Community and BBS",
+      "reason": "Anonymous forum comments, emotional chat, lack of comprehensive solution",
+      "patterns": [
+        "girlschannel\\.net",
+        "mamastar\\.jp",
+        "select\\.mamastar\\.jp",
+        "mamari\\.jp",
+        "tamahiyo\\.jp",
+        "baby-calendar\\.jp",
+        "bbs\\.cosme\\.net"
+      ]
+    },
+    "free_blog_diary": {
+      "name": "Free Blog and Diary Platforms",
+      "reason": "Casual personal journal, daily thoughts, zero keyword optimization",
+      "patterns": [
+        "note\\.com",
+        "ameblo\\.jp",
+        "amebaownd\\.com",
+        "hatenablog\\.(com|jp)",
+        "hateblo\\.jp",
+        "hatenadiary\\.(jp|com)",
+        "(blog|livedoor)\\.livedoor\\.(jp|blog)",
+        "ldblog\\.jp",
+        "doorblog\\.jp",
+        "blog\\.jp",
+        "blog\\.fc2\\.com",
+        "fc2\\.com",
+        "plaza\\.rakuten\\.co\\.jp",
+        "seesaa\\.net",
+        "sblo\\.jp",
+        "blog\\.goo\\.ne\\.jp",
+        "exblog\\.jp",
+        "jugem\\.jp",
+        "cocolog-nifty\\.com",
+        "muragon\\.com",
+        "ninja-web\\.net",
+        "shinobi\\.jp"
+      ]
+    },
+    "review_culture": {
+      "name": "Culture, Book and Entertainment Reviews",
+      "reason": "Under 250 characters user impressions, snippets, tweets",
+      "patterns": [
+        "bookmeter\\.com",
+        "booklog\\.jp",
+        "filmarks\\.com",
+        "fusetter\\.com",
+        "privatter\\.net",
+        "syosetu\\.com",
+        "ncode\\.syosetu\\.com",
+        "kakuyomu\\.jp",
+        "alphapolis\\.co\\.jp"
+      ]
+    },
+    "lifestyle_ugc": {
+      "name": "Lifestyle, Photo and Recipe UGC",
+      "reason": "Photo-first user posts with thin or no textual explanation",
+      "patterns": [
+        "roomclip\\.jp",
+        "snapdish\\.co",
+        "limia\\.jp",
+        "cookpad\\.com/(?:jp/)?recipes?/",
+        "recipe\\.rakuten\\.co\\.jp",
+        "lemon8-app\\.com",
+        "lipscosme\\.com/posts/"
+      ]
+    },
+    "curation_sns_bbs": {
+      "name": "Curation, SNS snippets and Forum threads",
+      "reason": "Raw user tweets or chat thread dumps",
+      "patterns": [
+        "togetter\\.com",
+        "min\\.togetter\\.com",
+        "twilog\\.togetter\\.com",
+        "5ch\\.net",
+        "2ch\\.sc",
+        "pinterest\\.(jp|com)"
+      ]
+    },
+    "free_wiki_homepage": {
+      "name": "Free Wiki and Simple Homepage",
+      "reason": "Unmaintained free wiki or basic template page",
+      "patterns": [
+        "w\\.atwiki\\.jp",
+        "wikiwiki\\.jp",
+        "seesaawiki\\.jp",
+        "jimdofree\\.com",
+        "jimdosite\\.com",
+        "wixsite\\.com"
+      ]
+    }
+  }
+}
