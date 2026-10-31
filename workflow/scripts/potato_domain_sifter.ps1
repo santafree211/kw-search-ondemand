@@ -26,7 +26,7 @@ $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 . "$PSScriptRoot\guard_check_entertainment_kw.ps1"
 . "$PSScriptRoot\guard_check_ymyl_kw.ps1"
-. "$PSScriptRoot\research_domain_harvester.ps1"
+. "$PSScriptRoot\research_domain_extract.ps1"
 . "$PSScriptRoot\db_sqlite_manager.ps1"
 
 function Get-PotatoBlogTopKeywords {

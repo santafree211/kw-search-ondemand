@@ -82,8 +82,30 @@ while ($totalApiCalls -lt $MaxTotalCalls -and -not $exhausted) {
     # Step 1: 起点となる実測DA 1〜9の独立個人ブログを取得
     $originBlog = Get-NextPotatoOriginBlog -Gender $Gender -ExcludeDomains $excludedDomains
     if ($null -eq $originBlog) {
-        Write-Warning "No more unparsed DA 1-9 personal blogs found in candidate queue. Pipeline complete."
-        break
+        Write-Output ">>> [QUEUE EMPTY] Candidate personal blogs exhausted. Infiltrating new DA 1-9 blogs via lowest water-level genre seed..."
+        $lowestGenre = Select-NextWaterLevelGenre -Gender $Gender -GenreMinId $GenreMinId -GenreMaxId $GenreMaxId -VisitedGenres @{}
+        if ($lowestGenre) {
+            $siftCand = Get-PrioritizedGenreCandidates -TargetGenre $lowestGenre -Gender $Gender -Tracker $tracker -MaxTotalCalls $MaxTotalCalls -CurrentApiCalls $totalApiCalls -DryRun:$DryRun
+            $totalApiCalls += $siftCand.ApiCallsMade
+            if ($siftCand.Candidates -and $siftCand.Candidates.Count -gt 0) {
+                foreach ($sc in $siftCand.Candidates) {
+                    if ($totalApiCalls -ge $MaxTotalCalls) { break }
+                    $cChain = Invoke-PotatoKeywordSerpChain -Keyword $sc.Keyword -Volume $sc.Volume -Gender $Gender -OriginGenreId $lowestGenre.Id -Tracker $tracker -DryRun:$DryRun
+                    $totalApiCalls += $cChain.ApiCallsMade
+                    if ($cChain.IsExhausted) { $exhausted = $true; $exhaustionError = $cChain.ExhaustionError; break }
+                    if ($cChain.NewDiscoveredBlogs -and $cChain.NewDiscoveredBlogs.Count -gt 0) {
+                        Write-Output "    -> Infiltration success: Discovered $($cChain.NewDiscoveredBlogs.Count) new personal blogs!"
+                        break
+                    }
+                }
+            }
+        }
+        # 次のループで新たに補充された個人ブログを取得
+        $originBlog = Get-NextPotatoOriginBlog -Gender $Gender -ExcludeDomains $excludedDomains
+        if ($null -eq $originBlog) {
+            Write-Warning "No new DA 1-9 personal blogs discovered after infiltration attempt. Retrying or finishing."
+            break
+        }
     }
 
     $dom = $originBlog.Domain
