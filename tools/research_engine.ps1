@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     tools/research_engine.ps1 - 個人ブログ起点・芋づる式自律リサーチ司令塔 (SKILL.md完全準拠)
 
@@ -48,6 +48,7 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 . "$projectRoot\workflow\scripts\sheet_profile_resolver.ps1"
 . "$projectRoot\workflow\scripts\engine_dedup_tracker.ps1"
 . "$projectRoot\workflow\scripts\engine_water_level_selector.ps1"
+. "$projectRoot\workflow\scripts\engine_candidate_sifter.ps1"
 . "$projectRoot\workflow\scripts\potato_origin_fetcher.ps1"
 . "$projectRoot\workflow\scripts\potato_domain_sifter.ps1"
 . "$projectRoot\workflow\scripts\potato_chain_reactor.ps1"

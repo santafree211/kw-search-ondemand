@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     potato_chain_reactor.ps1 - 当たり判定＆次世代個人ブログ自動収穫連鎖モジュール (Pure ASCII)
 .DESCRIPTION
@@ -44,7 +44,7 @@ function Invoke-PotatoKeywordSerpChain {
         [string]$Gender = "both",
 
         [Parameter(Mandatory=$false)]
-        [int]$OriginGenreId = 0,
+        [string]$OriginGenreId = "",
 
         [Parameter(Mandatory=$false)]
         $Tracker = $null,
